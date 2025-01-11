@@ -3,35 +3,41 @@
 #① ② ③ ④ ⑤ ⑥ ⑦ ⑧ ⑨ ⑩ 
 import bpy
 import builtins as __builtin__
+# Save the original print function
+old_print = __builtin__.print
 
 def console_print(*args):
     message = " ".join(map(str, args))
     
     for area in bpy.context.screen.areas:
         if area.type == 'CONSOLE':
-            
+            # If the CONSOLE area exists, write to it
             with bpy.context.temp_override(area=area):
                 for line in message.split("\n"):
                     bpy.ops.console.scrollback_append(text=line)
             return
     
-    __builtin__.print("Python Console alanı bulunamadı.")
+    # If the CONSOLE area does not exist, use the original print function
+    old_print("Python Console area not found.")
+    old_print(message)
 
 def clear_console():
     for area in bpy.context.screen.areas:
         if area.type == 'CONSOLE':
-            
+            # If the CONSOLE area exists, clear it
             with bpy.context.temp_override(area=area):
                 bpy.ops.console.clear()
             return
     
-    __builtin__.print("Python Console Area not found, could not cleared. Switch WorkSpage To Scripting before retry")
+    # If the CONSOLE area does not exist, print a warning message
+    old_print("Python Console area not found, could not clear. Please switch to the 'Scripting' workspace and try again.")
 
 def pprint(*args, **kwargs):
+    # Redirect pprint to console_print
     console_print(*args)
     
+# Redefine the print function as pprint
 __builtin__.print = pprint
 
-print("clear_console() and print() redefined. Now print function writes in Builtin Python Console print(\"Some Info\") in this session only.")
-
+# Redefine the clear_console function
 __builtin__.clear_console = clear_console
